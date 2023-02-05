@@ -1,8 +1,69 @@
-import { Box } from '@mantine/core';
-import './App.css';
+import { Box, List, ThemeIcon } from '@mantine/core';
+import { ListItem } from '@mantine/core/lib/List/ListItem/ListItem';
+import { iconSizes } from '@mantine/core/lib/Stepper/Step/Step.styles';
+import { CheckCircleFillIcon } from '@primer/octicons-react';
+import useSwr from 'swr';
+// import './App.css';
+import { AddTodo } from './AddTodo';
+
+export interface Todo {
+  id: number;
+  title: string;
+  body: string;
+  done: boolean;
+}
+
+export const ENDPOINT = 'http://localhost:4000';
+
+const fetcher = (url: string) =>
+  fetch(`${ENDPOINT}/${url}`).then((r) => r.json());
 
 function App() {
-  return <Box>Hello</Box>;
+  const { data, mutate } = useSwr<Todo[]>('api/todos', fetcher);
+  console.log(data);
+
+  const markTodoDone = async (id: number) => {
+    const updated = await fetch(`${ENDPOINT}/api/todos/${id}/done`, {
+      method: 'PATCH',
+    }).then((r) => r.json);
+    mutate(updated);
+  };
+
+  return (
+    <Box
+      sx={(theme) => ({
+        padding: '2rem',
+        width: '100%',
+        maxWidth: '40rem',
+        margin: '0 auto',
+      })}
+    >
+      <List spacing='xs' size='sm' mb={12} center>
+        {data?.map((todo) => {
+          return (
+            <List.Item
+              onClick={() => markTodoDone(todo.id)}
+              key={`todo__${todo.id}`}
+              icon={
+                todo.done ? (
+                  <ThemeIcon color='teal' size={24} radius='xl'>
+                    <CheckCircleFillIcon size={20} />
+                  </ThemeIcon>
+                ) : (
+                  <ThemeIcon color='gray' size={24} radius='xl'>
+                    <CheckCircleFillIcon size={20} />
+                  </ThemeIcon>
+                )
+              }
+            >
+              {todo.title}
+            </List.Item>
+          );
+        })}
+      </List>
+      <AddTodo mutate={mutate} />
+    </Box>
+  );
 }
 
 export default App;

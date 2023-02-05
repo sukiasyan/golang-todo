@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@mantine/form": "^5.10.3",
+    "react-hook-form": "^7.43.0"
+  }
+}
